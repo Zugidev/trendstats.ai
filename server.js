@@ -1,60 +1,22 @@
-const express = require('express');
-const cors = require('cors');
-const axios = require('axios');
+export default {
+  async fetch(request) {
+    if (request.url.includes("/api/trends/all")) {
+      const res = await fetch("https://www.reddit.com/r/all/hot.json?limit=10", {
+        headers: { "User-Agent": "trendstats" }
+      });
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+      const data = await res.json();
+      const trends = data.data.children.map(p => p.data.title).slice(0, 5);
 
-app.use(cors());
-app.use(express.static('public'));
+      return new Response(JSON.stringify({
+        success: true,
+        insight: trends.join("\n"),
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
 
-// 🔥 TEST ROUTE
-app.get('/test', (req, res) => {
-  res.send('API OK 🚀');
-});
-
-// 🔥 ANA API
-app.get('/api/trends/all', async (req, res) => {
-  try {
-    const reddit = await axios.get('https://www.reddit.com/r/all/hot.json?limit=15', {
-      headers: { 'User-Agent': 'trendstats-app' }
-    });
-
-    const trends = reddit.data.data.children
-      .map(p => p.data.title)
-      .filter(t => t.length > 20)
-      .slice(0, 8);
-
-    const insight = `
-Trend Analizi:
-
-${trends.map((t, i) => `${i + 1}. ${t}`).join('\n')}
-
-AI Yorumu: Viral içerikler ve gündem haberleri yükselişte. Sosyal medya etkileşimi yüksek başlıklar öne çıkıyor.
-`;
-
-    res.json({
-      success: true,
-      timestamp: new Date().toISOString(),
-      insight
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    res.json({
-      success: false,
-      insight: "Veri alınamadı ama sistem aktif 👍",
-      timestamp: new Date().toISOString()
-    });
+    return new Response("API çalışıyor 🚀");
   }
-});
-
-// 🔥 FALLBACK (çok önemli)
-app.get('*', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
-});
-
-app.listen(PORT, () => {
-  console.log(`TrendStats API çalışıyor: ${PORT}`);
-});
+};
