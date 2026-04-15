@@ -8,21 +8,30 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.static('public'));
 
-// TEST ROUTE (kontrol için)
+// 🔥 TEST ROUTE
 app.get('/test', (req, res) => {
   res.send('API OK 🚀');
 });
 
-// ANA API (BU SENİN ARADIĞIN)
+// 🔥 ANA API
 app.get('/api/trends/all', async (req, res) => {
   try {
-    const response = await axios.get('https://www.reddit.com/r/all/hot.json?limit=10', {
-      headers: { 'User-Agent': 'trendstats' }
+    const reddit = await axios.get('https://www.reddit.com/r/all/hot.json?limit=15', {
+      headers: { 'User-Agent': 'trendstats-app' }
     });
 
-    const trends = response.data.data.children.map(p => p.data.title);
+    const trends = reddit.data.data.children
+      .map(p => p.data.title)
+      .filter(t => t.length > 20)
+      .slice(0, 8);
 
-    const insight = `Trend Analizi:\n\n${trends.slice(0, 5).join('\n')}\n\nAI Yorumu: Viral içerikler yükselişte.`;
+    const insight = `
+Trend Analizi:
+
+${trends.map((t, i) => `${i + 1}. ${t}`).join('\n')}
+
+AI Yorumu: Viral içerikler ve gündem haberleri yükselişte. Sosyal medya etkileşimi yüksek başlıklar öne çıkıyor.
+`;
 
     res.json({
       success: true,
@@ -31,14 +40,21 @@ app.get('/api/trends/all', async (req, res) => {
     });
 
   } catch (error) {
+    console.error(error);
+
     res.json({
       success: false,
-      insight: "Trend verisi alınamadı ama sistem çalışıyor 👍",
+      insight: "Veri alınamadı ama sistem aktif 👍",
       timestamp: new Date().toISOString()
     });
   }
 });
 
+// 🔥 FALLBACK (çok önemli)
+app.get('*', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
 app.listen(PORT, () => {
-  console.log(`Server çalışıyor: ${PORT}`);
+  console.log(`TrendStats API çalışıyor: ${PORT}`);
 });
