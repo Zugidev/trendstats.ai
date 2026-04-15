@@ -8,7 +8,7 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       background: #0f0f1a;
       color: white;
       text-align: center;
@@ -57,15 +57,15 @@
   <script>
     async function getTrends() {
       const resultDiv = document.getElementById("result");
-      resultDiv.innerText = "Yükleniyor...";
+      resultDiv.innerText = "taranıyor...";
 
       try {
-        const res = await fetch("https://trendstats-ai.muratk-gsb.workers.dev/api/trends/all");
+        const res = await fetch("WORKER_LINK_BURAYA");
         const data = await res.json();
 
-        resultDiv.innerText = data.insight;
+        resultDiv.innerText = data.insight || "veri geldi ama boş";
       } catch (err) {
-        resultDiv.innerText = "Hata oluştu 😢";
+        resultDiv.innerText = "API hata verdi 😢";
       }
     }
   </script>
